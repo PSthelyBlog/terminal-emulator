@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linux Terminal Emulator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="terminal-container">
+        <div class="terminal-header">
+            <div class="terminal-buttons">
+                <div class="terminal-button close"></div>
+                <div class="terminal-button minimize"></div>
+                <div class="terminal-button maximize"></div>
+            </div>
+            <div class="terminal-title">Terminal</div>
+        </div>
+        <div class="terminal">
+            <div class="terminal-output" id="output"></div>
+            <div class="terminal-input-line">
+                <span class="prompt" id="prompt">user@linux:~$</span>
+                <span id="directory" style="display:none;">/home/user</span>
+                <input type="text" id="command-input" autofocus spellcheck="false">
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

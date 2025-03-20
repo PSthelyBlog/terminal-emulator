@@ -1,0 +1,130 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Courier New', monospace;
+}
+
+body {
+    background-color: #282c34;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    padding: 20px;
+}
+
+.terminal-container {
+    width: 800px;
+    height: 500px;
+    background-color: #1e1e1e;
+    border-radius: 5px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.terminal-header {
+    background-color: #333;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    user-select: none;
+}
+
+.terminal-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.terminal-button {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.close {
+    background-color: #ff5f56;
+}
+
+.minimize {
+    background-color: #ffbd2e;
+}
+
+.maximize {
+    background-color: #27c93f;
+}
+
+.terminal-title {
+    margin-left: 10px;
+    color: #ddd;
+    font-size: 14px;
+    flex-grow: 1;
+    text-align: center;
+}
+
+.terminal {
+    flex-grow: 1;
+    background-color: #1e1e1e;
+    color: #f8f8f2;
+    padding: 10px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.terminal-output {
+    flex-grow: 1;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.prompt {
+    color: #50fa7b;
+    margin-right: 5px;
+}
+
+.terminal-input-line {
+    display: flex;
+    align-items: center;
+    margin-top: 5px;
+}
+
+#command-input {
+    background: transparent;
+    border: none;
+    color: #f8f8f2;
+    flex-grow: 1;
+    outline: none;
+    font-size: inherit;
+    caret-color: #f8f8f2;
+}
+
+.command-history {
+    margin-bottom: 10px;
+}
+
+.error-text {
+    color: #ff5555;
+}
+
+.success-text {
+    color: #50fa7b;
+}
+
+.dir-text {
+    color: #8be9fd;
+}
+
+.file-text {
+    color: #f8f8f2;
+}
+
+/* Blink effect for cursor */
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
