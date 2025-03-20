@@ -5,18 +5,18 @@
 - Simulated file system with directories and files
 
 - Common Linux commands:
-        - ls - List directory contents
-        - cd - Change directory
-        - pwd - Print working directory
-        - cat - View file contents
-        - mkdir - Create directory
-        - touch - Create file
-        - rm - Remove files/directories
-        - echo - Print text
-        - clear/cls - Clear screen
-        - date - Show current date/time
-        - whoami - Show current user
-        - uname - Show system info
+    - ls - List directory contents
+    - cd - Change directory
+    - pwd - Print working directory
+    - cat - View file contents
+    - mkdir - Create directory
+    - touch - Create file
+    - rm - Remove files/directories
+    - echo - Print text
+    - clear/cls - Clear screen
+    - date - Show current date/time
+    - whoami - Show current user
+    - uname - Show system info
 
 - Simple text editor (accessible via edit filename)
 - Basic script execution
