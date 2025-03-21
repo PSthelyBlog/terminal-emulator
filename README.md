@@ -2,7 +2,9 @@
 
 - Classic terminal appearance with header bar and colored buttons
 - Working command history (up/down arrows)
-- Simulated file system with directories and files
+- Persistent file system with directories and files using IndexedDB
+  - All changes to files and directories are saved between sessions
+  - Current directory is preserved between sessions
 
 - Common Linux commands:
     - ls - List directory contents

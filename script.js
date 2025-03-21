@@ -4,8 +4,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const promptElement = document.getElementById('prompt');
     const directoryElement = document.getElementById('directory');
     
-    // File system simulation
-    const fileSystem = {
+    // Default file system structure
+    const defaultFileSystem = {
         '/': {
             type: 'directory',
             contents: {
@@ -63,6 +63,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
     
+    // File system that will be initialized from IndexedDB or defaultFileSystem
+    let fileSystem = null;
+    
     // Command history
     const commandHistory = [];
     let historyIndex = -1;
@@ -70,9 +73,163 @@ document.addEventListener('DOMContentLoaded', function() {
     // Current directory
     let currentDirectory = '/home/user';
     
+    // IndexedDB setup
+    const dbName = 'terminalFileSystem';
+    const dbVersion = 1;
+    let db = null;
+    
+    // Initialize IndexedDB
+    function initDB() {
+        return new Promise((resolve, reject) => {
+            const request = indexedDB.open(dbName, dbVersion);
+            
+            request.onerror = (event) => {
+                appendOutput('Failed to open IndexedDB. Using default file system.', 'error-text');
+                resolve(false);
+            };
+            
+            request.onupgradeneeded = (event) => {
+                db = event.target.result;
+                if (!db.objectStoreNames.contains('fileSystem')) {
+                    db.createObjectStore('fileSystem', { keyPath: 'id' });
+                }
+                if (!db.objectStoreNames.contains('state')) {
+                    db.createObjectStore('state', { keyPath: 'id' });
+                }
+            };
+            
+            request.onsuccess = (event) => {
+                db = event.target.result;
+                resolve(true);
+            };
+        });
+    }
+    
+    // Load file system from IndexedDB
+    function loadFileSystem() {
+        return new Promise((resolve, reject) => {
+            if (!db) {
+                resolve(defaultFileSystem);
+                return;
+            }
+            
+            const transaction = db.transaction(['fileSystem'], 'readonly');
+            const store = transaction.objectStore('fileSystem');
+            const request = store.get('rootFileSystem');
+            
+            request.onerror = (event) => {
+                appendOutput('Error loading file system from IndexedDB. Using default.', 'error-text');
+                resolve(defaultFileSystem);
+            };
+            
+            request.onsuccess = (event) => {
+                if (request.result) {
+                    resolve(request.result.data);
+                } else {
+                    // No data in IndexedDB yet, use default
+                    resolve(defaultFileSystem);
+                }
+            };
+        });
+    }
+    
+    // Save file system to IndexedDB
+    function saveFileSystem() {
+        return new Promise((resolve, reject) => {
+            if (!db) {
+                resolve(false);
+                return;
+            }
+            
+            const transaction = db.transaction(['fileSystem'], 'readwrite');
+            const store = transaction.objectStore('fileSystem');
+            const request = store.put({
+                id: 'rootFileSystem',
+                data: fileSystem
+            });
+            
+            request.onerror = (event) => {
+                appendOutput('Error saving file system to IndexedDB.', 'error-text');
+                resolve(false);
+            };
+            
+            request.onsuccess = (event) => {
+                resolve(true);
+            };
+        });
+    }
+    
+    // Load current directory from IndexedDB
+    function loadCurrentDirectory() {
+        return new Promise((resolve, reject) => {
+            if (!db) {
+                resolve('/home/user');
+                return;
+            }
+            
+            const transaction = db.transaction(['state'], 'readonly');
+            const store = transaction.objectStore('state');
+            const request = store.get('currentDirectory');
+            
+            request.onerror = (event) => {
+                resolve('/home/user');
+            };
+            
+            request.onsuccess = (event) => {
+                if (request.result) {
+                    resolve(request.result.data);
+                } else {
+                    resolve('/home/user');
+                }
+            };
+        });
+    }
+    
+    // Save current directory to IndexedDB
+    function saveCurrentDirectory() {
+        return new Promise((resolve, reject) => {
+            if (!db) {
+                resolve(false);
+                return;
+            }
+            
+            const transaction = db.transaction(['state'], 'readwrite');
+            const store = transaction.objectStore('state');
+            const request = store.put({
+                id: 'currentDirectory',
+                data: currentDirectory
+            });
+            
+            request.onerror = (event) => {
+                resolve(false);
+            };
+            
+            request.onsuccess = (event) => {
+                resolve(true);
+            };
+        });
+    }
+    
+    // Initialize the application with IndexedDB
+    async function initApp() {
+        const dbInitialized = await initDB();
+        
+        if (dbInitialized) {
+            fileSystem = await loadFileSystem();
+            currentDirectory = await loadCurrentDirectory();
+            appendOutput(`Loaded file system from IndexedDB. Current directory: ${currentDirectory}`, 'success-text');
+        } else {
+            fileSystem = defaultFileSystem;
+            appendOutput('Using default file system.', 'success-text');
+        }
+        
+        updatePrompt();
+    }
+    
     // Welcome message
     output.innerHTML = `<div class="success-text">Welcome to Linux Terminal Emulator v1.0.0</div>
 <div>Type 'help' to see available commands.</div>
+<div>Your filesystem changes are saved automatically using IndexedDB.</div>
 `;
     
     // Update prompt with current directory
@@ -81,6 +238,9 @@ document.addEventListener('DOMContentLoaded', function() {
         promptElement.textContent = `user@linux:${shortDir}$`;
         directoryElement.textContent = currentDirectory;
     }
+    
+    // Initialize the application
+    initApp();
     
     // Get object at path
     function getObjectAtPath(path) {
@@ -158,6 +318,19 @@ document.addEventListener('DOMContentLoaded', function() {
         historyIndex = commandHistory.length;
     }
     
+    // Reset filesystem to default
+    async function resetFileSystem() {
+        fileSystem = JSON.parse(JSON.stringify(defaultFileSystem));
+        currentDirectory = '/home/user';
+        updatePrompt();
+        
+        // Save to IndexedDB
+        await saveFileSystem();
+        await saveCurrentDirectory();
+        
+        appendOutput('File system has been reset to defaults.', 'success-text');
+    }
+    
     // Process command
     function processCommand(cmdLine) {
         if (!cmdLine.trim()) {
@@ -231,6 +404,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else {
                     removeFile(args[0], args.includes('-r') || args.includes('-rf'));
                 }
+                break;
+                
+            case 'resetfs':
+                resetFileSystem();
                 break;
                 
             case 'help':
@@ -350,6 +527,9 @@ document.addEventListener('DOMContentLoaded', function() {
         
         currentDirectory = targetPath;
         updatePrompt();
+        
+        // Save current directory to IndexedDB
+        saveCurrentDirectory();
     }
     
     // Cat file
@@ -402,6 +582,9 @@ document.addEventListener('DOMContentLoaded', function() {
             contents: {}
         };
         
+        // Save changes to IndexedDB
+        saveFileSystem();
+        
         appendOutput(`Directory created: ${dirName}`, 'success-text');
     }
     
@@ -433,6 +616,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 type: 'file',
                 content: ''
             };
+            
+            // Save changes to IndexedDB
+            saveFileSystem();
         }
     }
     
@@ -462,6 +648,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         delete parentObj.contents[fileName];
+        
+        // Save changes to IndexedDB
+        saveFileSystem();
     }
     
     // Edit file
@@ -543,6 +732,10 @@ document.addEventListener('DOMContentLoaded', function() {
             if (e.key === 's' && e.ctrlKey) {
                 e.preventDefault();
                 fileObj.content = editorContent.value;
+                
+                // Save changes to IndexedDB
+                saveFileSystem();
+                
                 appendOutput(`File saved: ${path}`, 'success-text');
                 document.body.removeChild(editorContainer);
                 commandInput.focus();
@@ -604,6 +797,7 @@ Available commands:
   uname [-a]        - Show system information
   edit <file>       - Edit file in simple editor
   ./script          - Execute script
+  resetfs           - Reset file system to default state
   help              - Show this help
 `;
         appendOutput(helpText);
