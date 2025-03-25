@@ -1,0 +1,52 @@
+/* Terminal Styles */
+body {
+    background-color: #000;
+    color: #f0f0f0;
+    overflow: hidden;
+}
+
+#terminal-container {
+    height: 100vh;
+    padding: 10px;
+    overflow-y: auto;
+}
+
+#terminal-output {
+    margin-bottom: 10px;
+    white-space: pre-wrap;
+}
+
+#terminal-prompt-container {
+    display: flex;
+}
+
+#terminal-prompt {
+    color: #0f0;
+    margin-right: 5px;
+}
+
+#terminal-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #f0f0f0;
+    font-family: monospace;
+    font-size: 14px;
+    outline: none;
+}
+
+.command-line {
+    margin-bottom: 5px;
+}
+
+.error-text {
+    color: #f00;
+}
+
+.success-text {
+    color: #0f0;
+}
+
+.info-text {
+    color: #00f;
+}

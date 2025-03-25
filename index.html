@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linux Terminal Emulator</title>
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div id="terminal-container">
+        <div id="terminal-output"></div>
+        <div id="terminal-prompt-container">
+            <span id="terminal-prompt"></span>
+            <input id="terminal-input" type="text" autofocus>
+        </div>
+    </div>
+
+    <!-- Load Models -->
+    <script src="js/models/terminal.js"></script>
+    <script src="js/models/command.js"></script>
+    
+    <!-- Load Views -->
+    <script src="js/views/terminalView.js"></script>
+    <script src="js/views/promptView.js"></script>
+    
+    <!-- Load Controllers -->
+    <script src="js/controllers/inputController.js"></script>
+    <script src="js/controllers/commandController.js"></script>
+    
+    <!-- Load Commands -->
+    <script src="js/commands/basicCommands.js"></script>
+    <script src="js/commands/fileSystemCommands.js"></script>
+    
+    <!-- Load Main App -->
+    <script src="js/app.js"></script>
+</body>
+</html>
