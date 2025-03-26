@@ -21,7 +21,7 @@ A simple web-based Linux terminal emulator built with vanilla HTML, CSS, and Jav
 
 1. Clone the repository
    ```
-   git clone https://github.com/yourusername/terminal-emulator.git
+   git clone https://github.com/PSthelyBlog/terminal-emulator.git
    cd terminal-emulator
    ```
 
