@@ -13,9 +13,38 @@ class InputController {
         this.promptView = promptView;
         this.commandController = commandController;
         this.terminal = terminal;
+        this.terminalView = commandController.terminalView;
         
         // Initialize event listeners
         this.initEventListeners();
+    }
+    
+    /**
+     * Display a list of completion matches in the terminal
+     * @param {string} input - The current input
+     * @param {Array} matches - The array of completion matches
+     */
+    displayCompletionMatches(input, matches) {
+        // Add current command with prompt to output
+        this.terminalView.addLine(`${this.terminal.getPrompt()}${input}`);
+        
+        if (matches.length === 0) {
+            return;
+        }
+        
+        // Format matches output based on type (command or file/directory)
+        if (typeof matches[0] === 'string') {
+            // These are command matches
+            const matchesLine = matches.join('  ');
+            this.terminalView.addLine(matchesLine);
+        } else {
+            // These are file/directory matches
+            const matchesLine = matches.map(m => m.display).join('  ');
+            this.terminalView.addLine(matchesLine);
+        }
+        
+        // Re-display the prompt with the current (possibly updated) input
+        this.terminalView.addLine(`${this.terminal.getPrompt()}${this.promptView.getInput()}`, 'no-newline');
     }
     
     /**
@@ -47,7 +76,22 @@ class InputController {
             }
             else if (event.key === 'Tab') {
                 event.preventDefault();
-                // Auto-completion could be implemented here
+                
+                // Get current input
+                const input = this.promptView.getInput();
+                
+                // Try to auto-complete
+                const result = this.terminal.autoComplete(input);
+                
+                // If completion available, update input
+                if (result.completed !== null) {
+                    this.promptView.setInput(result.completed);
+                    
+                    // Display matches if there are multiple and no perfect match
+                    if (result.matches.length > 1) {
+                        this.displayCompletionMatches(input, result.matches);
+                    }
+                }
             }
         });
         

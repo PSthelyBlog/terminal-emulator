@@ -23,6 +23,9 @@ class CommandController {
         // Register file system commands
         this.registerFileSystemCommands();
         
+        // Update available commands in the terminal model
+        this.updateAvailableCommands();
+        
         // Update the prompt
         this.updatePrompt();
     }
@@ -58,6 +61,16 @@ class CommandController {
             handler,
             description
         };
+        
+        // Update available commands list in terminal model
+        this.updateAvailableCommands();
+    }
+    
+    /**
+     * Update the available commands list in the terminal model
+     */
+    updateAvailableCommands() {
+        this.terminal.setAvailableCommands(Object.keys(this.commands));
     }
     
     /**

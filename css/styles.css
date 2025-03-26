@@ -50,3 +50,7 @@ body {
 .info-text {
     color: #00f;
 }
+
+.no-newline {
+    margin-bottom: 0;
+}

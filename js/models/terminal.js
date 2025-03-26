@@ -22,6 +22,9 @@ class Terminal {
             PWD: '/'
         };
         
+        // Available commands (to be populated by the command controller)
+        this.availableCommands = [];
+        
         // Virtual file system (simple object-based representation)
         this.fileSystem = {
             '/': {
@@ -181,6 +184,218 @@ class Terminal {
         }
         
         return node;
+    }
+    
+    /**
+     * Set the available commands (called by command controller)
+     * @param {Array<string>} commands - Array of command names
+     */
+    setAvailableCommands(commands) {
+        this.availableCommands = commands;
+    }
+    
+    /**
+     * Auto-complete a command or path
+     * @param {string} input - The current input to auto-complete
+     * @returns {object} Object containing completion info
+     */
+    autoComplete(input) {
+        // If input is empty, return null
+        if (!input.trim()) {
+            return { completed: null, matches: [] };
+        }
+        
+        const parts = input.split(' ');
+        
+        // If only one part, try to complete a command
+        if (parts.length === 1) {
+            const result = this.autocompleteCommand(parts[0]);
+            return result;
+        } 
+        
+        // Otherwise try to complete a file or directory path
+        else {
+            // The last part is what we're trying to autocomplete
+            const lastPart = parts[parts.length - 1];
+            
+            // Handle path autocompletion
+            const result = this.autocompletePath(lastPart);
+            if (result.completed !== null) {
+                // Replace the last part with the completed path
+                parts[parts.length - 1] = result.completed;
+                return {
+                    completed: parts.join(' '),
+                    matches: result.matches
+                };
+            }
+            return result;
+        }
+    }
+    
+    /**
+     * Autocomplete a command
+     * @param {string} partial - Partial command to complete
+     * @returns {object} Object with completed command and matches
+     */
+    autocompleteCommand(partial) {
+        // Find all matching commands
+        const matches = this.availableCommands.filter(cmd => 
+            cmd.startsWith(partial)
+        );
+        
+        // If exactly one match, return it
+        if (matches.length === 1) {
+            return { 
+                completed: matches[0],
+                matches: []
+            };
+        } 
+        // If multiple matches, find common prefix
+        else if (matches.length > 1) {
+            let commonPrefix = matches[0];
+            for (let i = 1; i < matches.length; i++) {
+                let j = 0;
+                while (j < commonPrefix.length && j < matches[i].length &&
+                       commonPrefix[j] === matches[i][j]) {
+                    j++;
+                }
+                commonPrefix = commonPrefix.substring(0, j);
+            }
+            
+            // Return completion info
+            return {
+                // Return common prefix only if it's longer than input
+                completed: commonPrefix.length > partial.length ? commonPrefix : partial,
+                matches: matches
+            };
+        }
+        
+        return { completed: null, matches: [] };
+    }
+    
+    /**
+     * Autocomplete a file or directory path
+     * @param {string} partial - Partial path to complete
+     * @returns {object} Object with completed path and matches
+     */
+    autocompletePath(partial) {
+        // Expand home directory if needed
+        let expandedPartial = partial;
+        if (partial === '~') {
+            expandedPartial = '/home/user';
+        } else if (partial.startsWith('~/')) {
+            expandedPartial = '/home/user/' + partial.substring(2);
+        }
+        
+        // Handle absolute and relative paths
+        let dirPath, fileName;
+        if (expandedPartial.includes('/')) {
+            // For paths with slashes, separate the directory part and file part
+            dirPath = expandedPartial.substring(0, expandedPartial.lastIndexOf('/'));
+            
+            // If dirPath is empty, we're looking at root
+            if (!dirPath && expandedPartial.startsWith('/')) {
+                dirPath = '/';
+            } else if (!dirPath) {
+                dirPath = this.currentDirectory;
+            } else if (!dirPath.startsWith('/')) {
+                // Relative path
+                dirPath = this.resolvePath(dirPath);
+            }
+            
+            fileName = expandedPartial.substring(expandedPartial.lastIndexOf('/') + 1);
+        } else {
+            // For simple names, assume current directory
+            dirPath = this.currentDirectory;
+            fileName = expandedPartial;
+        }
+        
+        // Resolve the directory path
+        const dirNode = this.getNodeAtPath(dirPath);
+        
+        // If directory doesn't exist, can't autocomplete
+        if (!dirNode || dirNode.type !== 'directory') {
+            return { completed: null, matches: [] };
+        }
+        
+        // Find all matching files/directories
+        const matchingNames = Object.keys(dirNode.contents).filter(name => 
+            name.startsWith(fileName)
+        );
+        
+        // Enhanced matches with type info (for display in terminal)
+        const matches = matchingNames.map(name => {
+            const isDir = dirNode.contents[name].type === 'directory';
+            return {
+                name: name,
+                type: isDir ? 'directory' : 'file',
+                display: isDir ? name + '/' : name
+            };
+        });
+        
+        // If exactly one match, return the full path with trailing slash for directories
+        if (matches.length === 1) {
+            const isDir = matches[0].type === 'directory';
+            const suffix = isDir ? '/' : '';
+            
+            // Construct the full path
+            let completed;
+            if (dirPath === '/') {
+                completed = `/${matches[0].name}${suffix}`;
+            } else {
+                completed = `${dirPath}/${matches[0].name}${suffix}`;
+            }
+            
+            // If the original input started with ~, convert back
+            if (partial === '~') {
+                completed = '~';
+            } else if (partial.startsWith('~/')) {
+                completed = '~' + completed.substring('/home/user'.length);
+            }
+            
+            return { 
+                completed: completed,
+                matches: []
+            };
+        } 
+        // If multiple matches, find common prefix
+        else if (matches.length > 1) {
+            let commonPrefix = matches[0].name;
+            for (let i = 1; i < matches.length; i++) {
+                let j = 0;
+                while (j < commonPrefix.length && j < matches[i].name.length &&
+                       commonPrefix[j] === matches[i].name[j]) {
+                    j++;
+                }
+                commonPrefix = commonPrefix.substring(0, j);
+            }
+            
+            // Construct path with common prefix
+            let completed = null;
+            if (commonPrefix.length > fileName.length) {
+                if (dirPath === '/') {
+                    completed = `/${commonPrefix}`;
+                } else {
+                    completed = `${dirPath}/${commonPrefix}`;
+                }
+                
+                // If the original input started with ~, convert back
+                if (partial === '~') {
+                    completed = '~';
+                } else if (partial.startsWith('~/')) {
+                    completed = '~' + completed.substring('/home/user'.length);
+                }
+            } else {
+                completed = partial;
+            }
+            
+            return {
+                completed: completed,
+                matches: matches
+            };
+        }
+        
+        return { completed: null, matches: [] };
     }
     
     /**
