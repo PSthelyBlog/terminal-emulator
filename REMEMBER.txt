@@ -24,6 +24,7 @@ Using the MVC (Model-View-Controller) pattern for modularity:
 - [x] Basic terminal output
 - [x] Simulated file system
 - [x] Scrollable output
+- [x] Tab completion
 
 ### Commands
 - [x] help - Display help information
@@ -41,7 +42,7 @@ Using the MVC (Model-View-Controller) pattern for modularity:
 - [x] env - Show environment variables
 
 ### Advanced Features (potential additions)
-- [ ] Tab completion
+- [x] Tab completion
 - [ ] Pipes and redirection (beyond echo > file)
 - [ ] Background processes
 - [ ] Command aliases
@@ -56,9 +57,10 @@ Using the MVC (Model-View-Controller) pattern for modularity:
 4. Implement controllers (InputController, CommandController)
 5. Implement basic commands
 6. Implement file system commands
-7. Add styling and visual improvements
-8. Test and fix bugs
-9. Write documentation
+7. Implement tab completion for commands and paths
+8. Add styling and visual improvements
+9. Test and fix bugs
+10. Write documentation
 
 ## CSS Styling Plan
 
@@ -81,6 +83,7 @@ Using the MVC (Model-View-Controller) pattern for modularity:
 - [x] Command history navigation (up/down arrows)
 - [x] Terminal display formatting
 - [x] Error handling for invalid commands
+- [x] Tab completion for commands and paths
 - [x] Cross-browser compatibility
 
 ## Future Improvement Ideas

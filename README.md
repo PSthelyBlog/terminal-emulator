@@ -7,6 +7,7 @@ A simple web-based Linux terminal emulator built with vanilla HTML, CSS, and Jav
 - Simulates a basic Linux terminal environment in the browser
 - Supports common Linux commands (ls, cd, pwd, mkdir, touch, cat, echo, clear, etc.)
 - Command history navigation with up/down arrow keys
+- Tab completion for commands and file/directory paths
 - Virtual file system with basic directory and file operations
 - Customizable terminal appearance through CSS
 
@@ -48,6 +49,11 @@ The terminal emulator supports the following commands:
 - `whoami` - Display current user
 - `date` - Display current date and time
 - `env` - Display environment variables
+
+You can use Tab completion to quickly navigate and type commands:
+- Press Tab while typing a command to autocomplete it
+- Press Tab while typing a file or directory path to autocomplete it
+- If multiple matches exist, pressing Tab will show all possible completions
 
 ## Project Structure
 
